@@ -1,23 +1,27 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { clientId, getAccessToken, fetchProfile } from '../script';
 
 // Force dynamic rendering to avoid static generation issues with localStorage
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default function CallbackPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const handleCallback = async () => {
-      const code = searchParams.get('code');
-      const errorParam = searchParams.get('error');
+      // Get search params directly from URL to avoid useSearchParams() prerender issues
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get('code');
+      const errorParam = params.get('error');
 
       if (errorParam) {
         setError(`Authorization failed: ${errorParam}`);
@@ -54,7 +58,7 @@ export default function CallbackPage() {
     };
 
     handleCallback();
-  }, [searchParams, router]);
+  }, [router]);
 
   if (loading) {
     return (
