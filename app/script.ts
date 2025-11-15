@@ -4,6 +4,18 @@ import { sha256 } from 'js-sha256';
 
 export const clientId = "93a99fc1bd3649e7be64cb9004f844cf";
 
+const getRedirectUri = (): string => {
+  if (typeof window !== 'undefined') {
+    // In browser, check if we're on localhost/127.0.0.1
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://127.0.0.1:3000/callback';
+    }
+  }
+  // Use environment variable or fallback to production
+  return process.env.NEXT_PUBLIC_REDIRECT_URI || 'https://spotify-discover-always-nine.vercel.app/callback';
+};
+
 function generateCodeVerifier(length: number): string {
   let text = '';
   const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -43,7 +55,7 @@ export async function redirectToAuthCodeFlow(clientId: string) {
   const params = new URLSearchParams();
   params.append("client_id", clientId);
   params.append("response_type", "code");
-  params.append("redirect_uri", "https://spotify-discover-always-nine.vercel.app/callback");
+  params.append("redirect_uri", getRedirectUri());
   params.append("scope", "user-read-private user-read-email");
   params.append("code_challenge", challenge);
   params.append("code_challenge_method", "S256");
@@ -58,7 +70,7 @@ export async function getAccessToken(clientId: string, code: string): Promise<st
   params.append("client_id", clientId);
   params.append("grant_type", "authorization_code");
   params.append("code", code);
-  params.append("redirect_uri", "https://spotify-discover-always-nine.vercel.app/callback");
+  params.append("redirect_uri", getRedirectUri());
   params.append("code_verifier", verifier!);
 
   const result = await fetch("https://accounts.spotify.com/api/token", {
