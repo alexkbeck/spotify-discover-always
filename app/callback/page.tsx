@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { clientId, getAccessToken, fetchProfile } from '../script';
 
+// Force dynamic rendering to avoid static generation issues with localStorage
+export const dynamic = 'force-dynamic';
+
 export default function CallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();

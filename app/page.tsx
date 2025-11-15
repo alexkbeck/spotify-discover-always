@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { clientId, redirectToAuthCodeFlow } from './script';
 
+// Force dynamic rendering to avoid static generation issues with localStorage
+export const dynamic = 'force-dynamic';
+
 export default function Home() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
