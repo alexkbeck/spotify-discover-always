@@ -6,7 +6,6 @@ import { clientId, getAccessToken, fetchProfile } from '../script';
 
 // Force dynamic rendering to avoid static generation issues with localStorage
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 export default function CallbackPage() {
   const router = useRouter();
