@@ -88,6 +88,19 @@ export async function fetchProfile(token: string): Promise<UserProfile> {
     method: "GET", headers: { Authorization: `Bearer ${token}` }
   });
 
-  return await result.json();
+  const profile = await result.json();
+  
+  if (!result.ok) {
+    throw new Error(`Failed to fetch profile: ${result.status} ${result.statusText} - ${JSON.stringify(profile)}`);
+  }
+
+  console.log('Fetched profile:', profile);
+  
+  // Ensure images array exists even if empty
+  if (!profile.images) {
+    profile.images = [];
+  }
+  
+  return profile;
 }
 

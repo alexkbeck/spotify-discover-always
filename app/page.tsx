@@ -15,8 +15,22 @@ export default function Home() {
 
     const storedProfile = localStorage.getItem('spotify_profile');
     if (storedProfile) {
-      const profileData = JSON.parse(storedProfile);
-      populateUI(profileData);
+      try {
+        const profileData = JSON.parse(storedProfile);
+        console.log('Loaded profile from localStorage:', profileData);
+        
+        // Ensure images array exists even if missing
+        if (!profileData.images) {
+          profileData.images = [];
+        }
+        
+        populateUI(profileData);
+      } catch (error) {
+        console.error('Error parsing stored profile:', error);
+        // Clear invalid data and redirect to auth
+        localStorage.removeItem('spotify_profile');
+        redirectToAuthCodeFlow(clientId);
+      }
     } else {
       redirectToAuthCodeFlow(clientId);
     }
@@ -25,6 +39,20 @@ export default function Home() {
   function populateUI(profile: UserProfile) {
     setProfile(profile);
     setLoading(false);
+  }
+
+  function handleLogout() {
+    // Clear all Spotify-related data from localStorage
+    localStorage.removeItem('spotify_profile');
+    localStorage.removeItem('spotify_access_token');
+    localStorage.removeItem('verifier');
+    
+    // Clear profile state
+    setProfile(null);
+    setLoading(true);
+    
+    // Redirect to auth flow
+    redirectToAuthCodeFlow(clientId);
   }
 
   if (loading) {
@@ -41,9 +69,17 @@ export default function Home() {
 
   return (
     <div className="min-h-screen p-8">
-      <h1 className="text-3xl font-bold mb-4">{profile.display_name}</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">{profile.display_name}</h1>
+        <button
+          onClick={handleLogout}
+          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+        >
+          Logout
+        </button>
+      </div>
       
-      {profile.images[0] && (
+      {profile.images?.[0] && (
         <div id="avatar" className="mb-4">
           <img 
             src={profile.images[0].url} 
@@ -58,7 +94,7 @@ export default function Home() {
       <div className="space-y-2">
         <p><strong>ID:</strong> <span id="id">{profile.id}</span></p>
         <p><strong>Email:</strong> <span id="email">{profile.email}</span></p>
-        <p><strong>URI:</strong> <a id="uri" href={profile.external_urls.spotify} className="text-blue-600 hover:underline">{profile.uri}</a></p>
+        <p><strong>URI:</strong> <a id="uri" href={profile.external_urls?.spotify || '#'} className="text-blue-600 hover:underline">{profile.uri}</a></p>
         <p><strong>URL:</strong> <a id="url" href={profile.href} className="text-blue-600 hover:underline">{profile.href}</a></p>
         <p><strong>Image URL:</strong> <span id="imgUrl">{profile.images[0]?.url ?? '(no profile image)'}</span></p>
       </div>
